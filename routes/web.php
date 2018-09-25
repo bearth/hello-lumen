@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,4 +37,6 @@ $router->get('/response', function (Request $request) {
     return response()
         ->make('Hello stranger', 200, ['Content-Type', 'text/plain']);
 });
+
+$router->get('/books', 'BooksController@index');
 
