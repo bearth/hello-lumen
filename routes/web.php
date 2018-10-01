@@ -39,4 +39,5 @@ $router->get('/response', function (Request $request) {
 });
 
 $router->get('/books', 'BooksController@index');
+$router->get('/books/{id:[\d]+}', 'BooksController@show');
 
