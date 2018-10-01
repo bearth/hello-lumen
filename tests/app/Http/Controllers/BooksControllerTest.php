@@ -67,4 +67,79 @@ class BooksControllerTest extends TestCase
             'BooksController@show route matching when it should not.'
         );
     }
+
+    /** @test **/
+    public function store_should_save_new_book_in_the_database()
+    {
+        $this->post('/books', [
+            'title' => 'The Invisible Man',
+            'description' => 'An invisible man is trapped in the terror of his own creation',
+            'author' => 'H. G. Wells'
+        ]);
+
+        $this
+            ->seeJson(['created' => true])
+            ->seeInDatabase('books', ['title' => 'The Invisible Man']);
+    }
+
+    /** @test **/
+    public function store_should_respond_with_a_201_and_location_header_when_successful()
+    {
+        $this->post('/books', [
+            'title' => 'The Invisible Man',
+            'description' => 'An invisible man is trapped in the terror of his own creation',
+            'author' => 'H. G. Wells'
+        ]);
+
+        $this
+            ->seeStatusCode(201)
+            ->seeHeaderWithRegExp('Location', '#/books/[\d]+$#');
+    }
+
+    /** @test **/
+    public function update_should_only_change_fillable_fields()
+    {
+        $this->notSeeInDatabase('books', [
+            'title' => 'The War of the Worlds'
+        ]);
+
+        $this->put('/books/1', [
+            'id' => 5,
+            'title' => 'The War of the Worlds',
+            'description' => 'The book is way better than the movie.',
+            'author' => 'Wells, H. G.'
+        ]);
+
+        $this
+            ->seeStatusCode(200)
+            ->seeJson([
+                'id' => 1,
+                'title' => 'The War of the Worlds',
+                'description' => 'The book is way better than the movie.',
+                'author' => 'Wells, H. G.'
+            ])
+            ->seeInDatabase('books', [
+                'title' => 'The War of the Worlds'
+            ]);
+    }
+
+    /** @test **/
+    public function update_should_fail_with_an_invalid_id()
+    {
+        $this
+            ->put('/books/999999999999')
+            ->seeStatusCode(404)
+            ->seeJsonEquals([
+                'error' => [
+                    'message' => 'Book not found'
+                ]
+            ]);
+    }
+
+    /** @test **/
+    public function update_should_not_match_an_invalid_route()
+    {
+        $this->put('/books/this-is-invalid')
+            ->seeStatusCode(404);
+    }
 }
